@@ -20,7 +20,11 @@ pub struct Info {
 }
 
 pub fn dir(app: &AppHandle) -> PathBuf {
-    app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from(".")).join("extensions")
+    let dir = app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from(".")).join("extensions");
+    // WebView2 fails to create any webview ("os error 3") when the extensions
+    // folder is missing, which is the case on a fresh install.
+    let _ = fs::create_dir_all(&dir);
+    dir
 }
 
 /// Accepts a Web Store link or a bare ID. IDs are 32 letters a–p.
