@@ -1739,7 +1739,7 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     )?;
     let app_menu = Submenu::with_items(
         app,
-        "Browser",
+        "BetterBrowser",
         true,
         &[
             &PredefinedMenuItem::about(app, None, None)?,
@@ -1832,7 +1832,7 @@ fn main() {
 
             #[allow(unused_mut)]
             let mut wb = tauri::window::WindowBuilder::new(app, "main")
-                .title("Browser")
+                .title("BetterBrowser")
                 .inner_size(1200.0, 800.0)
                 .min_inner_size(480.0, 300.0);
             #[cfg(target_os = "macos")]

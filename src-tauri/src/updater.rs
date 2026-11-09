@@ -14,6 +14,12 @@ use tauri_plugin_updater::{Update, UpdaterExt};
 const FIRST_CHECK_AFTER: Duration = Duration::from_secs(10);
 const CHECK_EVERY: Duration = Duration::from_secs(6 * 60 * 60);
 
+// Личная сборка: обновления автора подменили бы её целиком, поэтому выключено.
+// Чтобы включить — свой репозиторий в plugins.updater.endpoints (tauri.conf.json),
+// свой ключ подписи и true здесь.
+pub const ENABLED: bool = false;
+const DISABLED_MSG: &str = "Updates are turned off in this build";
+
 // The downloaded installer waits here until the app quits.
 #[derive(Default)]
 pub struct Ready(Mutex<Option<(Update, Vec<u8>)>>);
@@ -40,6 +46,9 @@ impl Found {
 }
 
 async fn look(app: &AppHandle) -> Result<Option<Update>, String> {
+    if !ENABLED {
+        return Err(DISABLED_MSG.into());
+    }
     app.updater()
         .map_err(|e| e.to_string())?
         .check()
@@ -80,6 +89,9 @@ pub async fn update_install(app: AppHandle) -> Result<(), String> {
 
 // Runs at startup and then a few times a day: find, download, park.
 pub fn watch(app: &AppHandle) {
+    if !ENABLED {
+        return log::info!("updates are turned off in this build");
+    }
     let app = app.clone();
     std::thread::spawn(move || {
         std::thread::sleep(FIRST_CHECK_AFTER);
