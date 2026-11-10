@@ -1,13 +1,13 @@
 {
   "version": 1,
-  "rev": 5,
-  "savedAt": "2026-11-10T00:14:00.065Z",
+  "rev": 6,
+  "savedAt": "2026-11-10T00:38:07.444Z",
   "id": "project-1meg9h1",
   "name": "betterbrowser",
   "color": "#bf5af2",
   "viewport": {
     "x": -667,
-    "y": -127,
+    "y": 377.231884057971,
     "zoom": 1
   },
   "nodes": [
@@ -31,6 +31,23 @@
       "cwd": ".",
       "agentId": "claude",
       "agentSessionId": "2f792cee-a5bc-4816-bed5-79fb99902e7a"
+    },
+    {
+      "id": "term-mw9yof1j-072c70eb",
+      "kind": "terminal",
+      "position": {
+        "x": 1415,
+        "y": -297.231884057971
+      },
+      "size": {
+        "width": 640,
+        "height": 440
+      },
+      "title": "Terminal 2",
+      "color": "#32d74b",
+      "group": null,
+      "tags": [],
+      "cwd": "."
     }
   ],
   "bridges": [],
