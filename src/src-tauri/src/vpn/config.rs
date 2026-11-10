@@ -13,6 +13,8 @@ pub const PAC_PATH: &str = "/proxy.pac";
 pub const HTTPS_PORT: u16 = 443;
 
 pub const CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
+// Живому трафику даём больше времени, чем проверке: бесплатные прокси бывают медленными.
+pub const TUNNEL_TIMEOUT: Duration = Duration::from_secs(10);
 pub const CHECK_TIMEOUT: Duration = Duration::from_secs(8);
 pub const FETCH_TIMEOUT: Duration = Duration::from_secs(20);
 
@@ -30,6 +32,8 @@ pub const RECHECK_EVERY: Duration = Duration::from_secs(10 * 60);
 pub const RETRY_WHEN_EMPTY: Duration = Duration::from_secs(60);
 // Сколько прокси из пула пробовать на одно соединение, прежде чем сдаться.
 pub const TUNNEL_ATTEMPTS: usize = 3;
+// Одна неудача — ещё не смерть прокси (сайт не ответил, сеть дёрнулась). Выкидываем после стольких подряд.
+pub const MAX_FAILURES: u32 = 3;
 
 pub const MAX_HEAD_BYTES: usize = 16 * 1024;
 

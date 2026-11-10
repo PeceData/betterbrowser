@@ -70,12 +70,13 @@ impl Server {
             return respond(&mut client, "403 Forbidden", "text/plain", "Only HTTPS to listed sites");
         }
         for up in self.pool.candidates().into_iter().take(TUNNEL_ATTEMPTS) {
-            match up.tunnel(host, port, CONNECT_TIMEOUT) {
+            match up.tunnel(host, port, TUNNEL_TIMEOUT) {
                 Ok(remote) => {
+                    self.pool.report_success(&up);
                     client.write_all(b"HTTP/1.1 200 Connection Established\r\n\r\n")?;
                     return pipe(client, remote);
                 }
-                Err(_) => self.pool.drop_dead(&up),
+                Err(_) => self.pool.report_failure(&up),
             }
         }
         respond(&mut client, "502 Bad Gateway", "text/plain", "No working free proxy right now, try again in a minute")

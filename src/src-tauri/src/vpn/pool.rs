@@ -14,6 +14,19 @@ use super::upstream::Upstream;
 struct Good {
     up: Upstream,
     latency: Duration,
+    // Неудачи подряд; любая удача обнуляет.
+    failures: u32,
+}
+
+impl Good {
+    fn new(up: Upstream, latency: Duration) -> Self {
+        Self { up, latency, failures: 0 }
+    }
+}
+
+// Сначала без недавних сбоев, внутри — самые быстрые.
+fn rank(list: &mut [Good]) {
+    list.sort_by_key(|g| (g.failures, g.latency));
 }
 
 pub struct Pool {
@@ -44,14 +57,34 @@ impl Pool {
         self.checking.load(Ordering::Relaxed)
     }
 
-    // Прокси перестал отвечать: выкидываем и, если осталось мало, будим поиск новых.
-    pub fn drop_dead(&self, up: &Upstream) {
-        let left = {
+    pub fn report_success(&self, up: &Upstream) {
+        let mut good = self.good.lock().unwrap();
+        if let Some(g) = good.iter_mut().find(|g| g.up == *up) {
+            if g.failures > 0 {
+                g.failures = 0;
+                rank(&mut good);
+            }
+        }
+    }
+
+    // Прокси не открыл туннель. После MAX_FAILURES неудач подряд выкидываем его
+    // и, если осталось мало, будим поиск новых.
+    pub fn report_failure(&self, up: &Upstream) {
+        let (dead, left) = {
             let mut good = self.good.lock().unwrap();
-            good.retain(|g| g.up != *up);
-            good.len()
+            let Some(g) = good.iter_mut().find(|g| g.up == *up) else { return };
+            g.failures += 1;
+            let dead = g.failures >= MAX_FAILURES;
+            if dead {
+                good.retain(|g| g.up != *up);
+            }
+            rank(&mut good);
+            (dead, good.len())
         };
-        log::info!("vpn: {up} stopped working, {left} left");
+        if !dead {
+            return;
+        }
+        log::info!("vpn: {up} failed {MAX_FAILURES} times in a row, dropped, {left} left");
         if left < POOL_MIN {
             let _ = self.kick.lock().unwrap().send(());
         }
@@ -78,9 +111,8 @@ impl Pool {
         if current.is_empty() {
             return;
         }
-        let mut alive: Vec<Good> =
-            current.into_iter().filter_map(|up| probe(&up).map(|latency| Good { up, latency })).collect();
-        alive.sort_by_key(|g| g.latency);
+        let mut alive: Vec<Good> = current.into_iter().filter_map(|up| probe(&up).map(|latency| Good::new(up, latency))).collect();
+        rank(&mut alive);
         *self.good.lock().unwrap() = alive;
     }
 
@@ -102,7 +134,7 @@ impl Pool {
                         let Some(up) = queue.lock().unwrap().next() else { break };
                         if let Some(latency) = probe(&up) {
                             have.fetch_add(1, Ordering::Relaxed);
-                            found.lock().unwrap().push(Good { up, latency });
+                            found.lock().unwrap().push(Good::new(up, latency));
                         }
                     }
                 })
@@ -114,7 +146,7 @@ impl Pool {
 
         let mut good = self.good.lock().unwrap();
         good.extend(found.lock().unwrap().drain(..));
-        good.sort_by_key(|g| g.latency);
+        rank(&mut good);
         log::info!("vpn: {} working proxies, best {:?}", good.len(), good.first().map(|g| g.up.to_string()));
     }
 }
