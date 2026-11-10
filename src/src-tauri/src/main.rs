@@ -583,8 +583,16 @@ fn spawn_webview(app: &AppHandle, id: u32, url: Url) -> tauri::Result<()> {
         }
     });
     // New webviews land on top; the island must stay above them.
+    // reparent() в tauri-runtime-wry держит блокировку окна панели, пока ждёт главный поток.
+    // Если в этот момент панель шлёт событие WebView2 (fullscreen changed), главный поток
+    // ждёт ту же блокировку — и браузер виснет навсегда. На главном потоке reparent
+    // выполняется сразу, без ожидания, поэтому зовём его оттуда.
     if let Some(ui) = app.get_webview("ui") {
-        ui.reparent(&window)?;
+        app.run_on_main_thread(move || {
+            if let Err(e) = ui.reparent(&window) {
+                log::warn!("could not keep the toolbar on top: {e}");
+            }
+        })?;
     }
     Ok(())
 }
