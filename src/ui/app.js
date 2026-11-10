@@ -288,6 +288,8 @@ window.render = (s) => {
   root.classList.toggle('fullscreen', !!s.fullscreen);
   if (modeChanged) { lastSize = ''; requestAnimationFrame(reportSize); }
   root.classList.toggle('revealed', !!s.revealed);
+  // VPN badge: the active tab's site goes through the proxy.
+  root.classList.toggle('vpn', !!s.vpn?.[s.tabs.findIndex((t) => t.id === s.active)]);
   root.classList.toggle('open', s.island);
   if (opening) {
     // Clicking the pill expands in place; a shortcut summons it over a dimmed page.

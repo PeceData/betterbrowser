@@ -10,6 +10,7 @@ const ICONS = {
   startup: '<svg viewBox="0 0 24 24"><path d="M12 3v9M18.36 6.64a9 9 0 1 1-12.73 0"/></svg>',
   performance: '<svg viewBox="0 0 24 24"><path d="M12 13 16 9"/><path d="M3.5 17a9 9 0 1 1 17 0"/></svg>',
   extensions: '<svg viewBox="0 0 24 24"><path d="M10 4.5a2 2 0 0 1 4 0V6h3a1 1 0 0 1 1 1v3h1.5a2 2 0 0 1 0 4H18v3a1 1 0 0 1-1 1h-3v-1.5a2 2 0 0 0-4 0V18H7a1 1 0 0 1-1-1v-3h1.5a2 2 0 0 0 0-4H6V7a1 1 0 0 1 1-1h3z"/></svg>',
+  vpn: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg>',
   privacy: '<svg viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z"/></svg>',
   about: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
   updates: '<svg viewBox="0 0 24 24"><path d="M12 4v10"/><path d="m8 10 4 4 4-4"/><path d="M4 18h16"/></svg>',
@@ -202,6 +203,38 @@ window.checkPending = async () => {
   install(link);
 };
 
+// ---------- vpn ----------
+
+// The proxy starts with the browser, so changes need a restart.
+const RESTART_NOTE = 'Restart Browser to apply.';
+const VPN_POLL_MS = 3000;
+
+function drawVpn() {
+  $('vpnToggle').setAttribute('aria-checked', String(settings.vpn.enabled));
+  $('vpnSites').value = settings.vpn.sites.join('\n');
+}
+$('vpnToggle').addEventListener('click', () => {
+  settings.vpn.enabled = !settings.vpn.enabled;
+  save();
+  drawVpn();
+  $('vpnNote').textContent = RESTART_NOTE;
+});
+$('vpnSites').addEventListener('change', (e) => {
+  settings.vpn.sites = e.target.value.split(/\s+/).map((s) => s.trim()).filter(Boolean);
+  save();
+  $('vpnNote').textContent = RESTART_NOTE;
+});
+
+async function vpnStatus(os) {
+  const s = await invoke('vpn_status');
+  const text = os !== 'windows' ? 'Works on Windows only for now.'
+    : !s.running ? 'Off.'
+    : s.proxies > 0 ? `On. ${s.proxies} working proxies, using ${s.best}.`
+    : s.checking ? 'Looking for working free proxies… This takes up to a minute.'
+    : 'No working proxy found yet, trying again soon.';
+  $('vpnStatus').textContent = text;
+}
+
 // ---------- privacy ----------
 
 // Two clicks instead of confirm(): dialogs don't show in this webview.
@@ -304,6 +337,9 @@ invoke('get_settings').then((r) => {
   drawHome();
   drawSaver();
   drawSwitches();
+  drawVpn();
+  vpnStatus(r.os);
+  setInterval(() => vpnStatus(r.os), VPN_POLL_MS);
   loadExtensions();
   window.checkPending();
 });

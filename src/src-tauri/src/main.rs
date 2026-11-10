@@ -13,6 +13,7 @@ use std::{
 mod extensions;
 mod logs;
 mod updater;
+mod vpn;
 
 use serde::{Deserialize, Serialize};
 use tauri::{
@@ -123,6 +124,7 @@ struct Settings {
     // Reopen the tabs from last time on start.
     restore_session: bool,
     save_history: bool,
+    vpn: vpn::VpnSettings,
 }
 
 impl Default for Settings {
@@ -134,6 +136,7 @@ impl Default for Settings {
             sleep_minutes: 10,
             restore_session: true,
             save_history: true,
+            vpn: vpn::VpnSettings::default(),
         }
     }
 }
@@ -395,6 +398,8 @@ fn state_json(app: &AppHandle) -> serde_json::Value {
         "mode": b.settings.mode,
         "revealed": b.revealed,
         "fullscreen": fullscreen,
+        // По вкладке: идёт ли её сайт через VPN (для значка).
+        "vpn": tabs.iter().map(|t| vpn::routes(&t.url)).collect::<Vec<_>>(),
     })
 }
 
@@ -506,6 +511,8 @@ fn spawn_webview(app: &AppHandle, id: u32, url: Url) -> tauri::Result<()> {
     // WebView2 needs the same environment options on every webview.
     #[cfg(windows)]
     let builder = builder.browser_extensions_enabled(true).extensions_path(extensions::dir(app));
+    #[cfg(windows)]
+    let builder = with_vpn(builder);
     let builder = builder
         .on_page_load(move |wv, p| {
             // about:blank never reports Finished, so it must not count as loading.
@@ -1755,9 +1762,20 @@ fn ui_builder(app: &AppHandle) -> WebviewBuilder<tauri::Wry> {
     let builder = WebviewBuilder::new("ui", WebviewUrl::App("index.html".into()));
     #[cfg(windows)]
     let builder = builder.browser_extensions_enabled(true).extensions_path(extensions::dir(app));
+    #[cfg(windows)]
+    let builder = with_vpn(builder);
     #[cfg(not(windows))]
     let _ = app;
     builder
+}
+
+// WebView2 требует одинаковые аргументы у всех webview, поэтому VPN подключается всем сразу.
+#[cfg(windows)]
+fn with_vpn(builder: WebviewBuilder<tauri::Wry>) -> WebviewBuilder<tauri::Wry> {
+    match vpn::browser_args() {
+        Some(args) => builder.additional_browser_args(&args),
+        None => builder,
+    }
 }
 
 fn main() {
@@ -1771,7 +1789,7 @@ fn main() {
             ext_list, ext_install, ext_remove, get_settings, set_settings, open_settings,
             take_pending_install, clear_data, reopen_tab, suggest, clear_history, open_downloads,
             downloads_list, download_open, downloads_clear, pdf_fetch, pdf_save, print_page,
-            updater::update_check, updater::update_install, logs::open_logs
+            updater::update_check, updater::update_install, logs::open_logs, vpn::vpn_status
         ])
         .on_menu_event(|app, event| {
             let app = app.clone();
@@ -1826,6 +1844,7 @@ fn main() {
                 for d in b.downloads.iter_mut().filter(|d| d.state == DownloadState::Active) {
                     d.state = DownloadState::Failed;
                 }
+                vpn::start(&b.settings.vpn);
             }
             #[cfg(target_os = "macos")]
             extensions::mac::init(&handle);

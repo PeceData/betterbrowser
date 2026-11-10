@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "rev": 4,
-  "savedAt": "2026-11-09T23:58:21.964Z",
+  "rev": 5,
+  "savedAt": "2026-11-10T00:14:00.065Z",
   "id": "project-1meg9h1",
   "name": "betterbrowser",
   "color": "#bf5af2",
@@ -27,6 +27,7 @@
       "color": "#d97757",
       "group": null,
       "tags": [],
+      "collapsed": false,
       "cwd": ".",
       "agentId": "claude",
       "agentSessionId": "2f792cee-a5bc-4816-bed5-79fb99902e7a"

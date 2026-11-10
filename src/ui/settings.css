@@ -134,3 +134,8 @@ select:focus, .text:focus { border-color: var(--accent); }
 
 .nothing { text-align: center; color: var(--dim); margin-top: 48px; }
 mark { background: #ffe082; color: inherit; border-radius: 2px; }
+
+textarea.text.area {
+  height: auto; width: 100%; padding: 10px 12px; resize: vertical;
+  font: 13px/1.5 ui-monospace, Consolas, monospace; color: var(--text);
+}
