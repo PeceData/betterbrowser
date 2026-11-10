@@ -1,6 +1,6 @@
 // Works out the visitor's system and CPU, then hands them that exact installer.
 // The file is pulled in a hidden frame, so the page never jumps to GitHub.
-const REPO = 'azterixx/browser';
+const REPO = 'PeceData/betterbrowser';
 
 const btn = document.getElementById('dl');
 const label = document.getElementById('dl-label');

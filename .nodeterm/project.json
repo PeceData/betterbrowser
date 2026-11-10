@@ -1,13 +1,13 @@
 {
   "version": 1,
-  "rev": 3,
-  "savedAt": "2026-11-09T23:55:59.895Z",
+  "rev": 4,
+  "savedAt": "2026-11-09T23:58:21.964Z",
   "id": "project-1meg9h1",
   "name": "betterbrowser",
   "color": "#bf5af2",
   "viewport": {
-    "x": -664,
-    "y": -128,
+    "x": -667,
+    "y": -127,
     "zoom": 1
   },
   "nodes": [
@@ -15,8 +15,8 @@
       "id": "term-mw9x5jzo-4761193c",
       "kind": "terminal",
       "position": {
-        "x": 744,
-        "y": 208
+        "x": 747,
+        "y": 207
       },
       "size": {
         "width": 640,

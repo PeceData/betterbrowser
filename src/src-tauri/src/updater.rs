@@ -14,10 +14,9 @@ use tauri_plugin_updater::{Update, UpdaterExt};
 const FIRST_CHECK_AFTER: Duration = Duration::from_secs(10);
 const CHECK_EVERY: Duration = Duration::from_secs(6 * 60 * 60);
 
-// Личная сборка: обновления автора подменили бы её целиком, поэтому выключено.
-// Чтобы включить — свой репозиторий в plugins.updater.endpoints (tauri.conf.json),
-// свой ключ подписи и true здесь.
-pub const ENABLED: bool = false;
+// Обновления идут из своего репозитория PeceData/betterbrowser (endpoints в tauri.conf.json),
+// подписаны своим ключом ~/.tauri/betterbrowser.key. false — выключить проверку.
+pub const ENABLED: bool = true;
 const DISABLED_MSG: &str = "Updates are turned off in this build";
 
 // The downloaded installer waits here until the app quits.

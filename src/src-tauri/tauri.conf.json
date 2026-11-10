@@ -23,12 +23,14 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "createUpdaterArtifacts": false
+    "createUpdaterArtifacts": true
   },
   "plugins": {
     "updater": {
-      "endpoints": [],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcxMzUzOERCNUFDOEI0Q0QKUldUTnRNaGEyemcxY2E5ejVwbXdvWjBBZm9uK0s1Vmx1NUZxWWtnMmdXaTlHSHUrVG02aE9BVFYK",
+      "endpoints": [
+        "https://github.com/PeceData/betterbrowser/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDYzMTE2QkI5NUYxNTJGQTMKUldTakx4VmZ1V3NSWXhsU3FSaCt2c2FLazJsTytuVzZNNHg4eFF0aFByQURWZWhZY0xvVDdocysK",
       "windows": {
         "installMode": "passive"
       }
